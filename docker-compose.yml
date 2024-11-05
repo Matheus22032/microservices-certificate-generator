@@ -1,0 +1,65 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"      
+      - "15672:15672"    
+    networks:
+      - ms_network
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"      
+    networks:
+      - ms_network
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"      
+    networks:
+      - ms_network
+
+  worker:
+    build:
+      context: worker-certificate-generator
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+      - postgres
+      - redis
+    volumes:
+      - pdf_storege:/app/pdf_files
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_USER=myuser
+      - DATABASE_PASSWORD=mypassword
+      - DATABASE_NAME=mydatabase
+      - RABBITMQ_HOST=rabbitmq
+      - REDIS_HOST=redis
+    networks:
+      - ms_network
+
+  api:
+    build: 
+      context: teste
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+      - postgres
+      - redis
+      - worker
+    networks:
+      - ms_network
+
+volumes:
+  pdf_storege:
+
+networks:
+  ms_network:
+    driver: bridge
