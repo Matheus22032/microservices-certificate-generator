@@ -1,3 +1,4 @@
+import time
 import pdfkit
 from jinja2 import Environment, FileSystemLoader
 import os
@@ -35,13 +36,20 @@ def consume_message(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def worker_init():
-    connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
-    channel = connection.channel()
-
-    channel.queue_declare(queue='certificate')
-    channel.basic_consume(queue='certificate', on_message_callback=consume_message)
-
-    print('Worker iniciado. Aguardando mensagens...')
-    channel.start_consuming()
+    max_retries = 5
+    retries = 0
+    while retries < max_retries:
+        try:
+            connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+            channel = connection.channel()
+            channel.queue_declare(queue='certificate')
+            channel.basic_consume(queue='certificate', on_message_callback=consume_message)
+            print('Worker iniciado. Aguardando mensagens...')
+            channel.start_consuming()
+            break
+        except pika.exceptions.AMQPConnectionError:
+            retries += 1
+            print(f"Erro de conexão com o RabbitMQ. Retentando em 5 segundos... ({retries}/{max_retries})")
+            time.sleep(5)
 
 worker_init()
