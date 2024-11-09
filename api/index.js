@@ -20,9 +20,22 @@ let pgClient;
 let rabbitChannel;
 
 const connectToPostgres = async () => {
-  pgClient = new Client(DB_CONFIG);
-  await pgClient.connect();
-};
+    let isConnected = false;
+  
+    while (!isConnected) {
+      try {
+        console.log("Tentando conectar ao PostgreSQL...");
+        await client.connect();
+        console.log("Conectado ao PostgreSQL!");
+        isConnected = true;
+      } catch (error) {
+        console.error("Erro ao conectar ao PostgreSQL:", error.message);
+        console.log("Tentando reconectar em 5 segundos...");
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      }
+    }
+  };
+  
 
 
 const connectToRabbitMQ = async () => {
