@@ -10,13 +10,15 @@ services:
   postgres:
     image: postgres
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: certificates
     ports:
       - "5432:5432"      
     networks:
       - ms_network
+    volumes:
+    - ./postgres/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql  
 
   redis:
     image: redis
@@ -47,7 +49,7 @@ services:
 
   api:
     build: 
-      context: teste
+      context: api
       dockerfile: Dockerfile
     depends_on:
       - rabbitmq

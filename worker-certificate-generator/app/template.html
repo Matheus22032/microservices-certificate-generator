@@ -4,17 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diploma</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Imperial+Script&display=swap" rel="stylesheet">
+
     <style>
+
+        .imperial-script-regular {
+            font-family: "Imperial Script", cursive;
+            font-weight: 400;
+            font-style: normal;
+            }
+
         @media print {
             @page {
                 size: A4 landscape;
-                margin: 0; /* Remove margem padrão */
+                margin: 0;
             }
             body {
                 margin: 0;
                 padding: 0;
             }
-            /* Ocultar cabeçalho e rodapé padrão */
             body::before, body::after {
                 display: none;
             }
@@ -31,18 +41,20 @@
         }
         
         .diploma-container {
-            width: 90%; /* Ajuste de largura para caber na página A4 em modo paisagem */
-            max-width: 1000px; /* Garantir que não ultrapasse a largura máxima */
+            width: 90%;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 40px;
             background-color: white;
             box-shadow: none;
+            position: relative;
         }
 
         .header {
             text-align: center;
-            font-size: 28px;
+            font-size: 40px;
             font-weight: bold;
+            font-family: "Imperial Script";
         }
 
         .sub-header {
@@ -52,19 +64,22 @@
         }
 
         .content {
-            margin: 40px 0;
+            margin: 100px 0 50px 0;
             font-size: 18px;
             line-height: 1.5;
+            text-align: center;
         }
 
         .signatures {
             margin-top: 50px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
         }
 
         .signature {
             text-align: center;
+            border-top: 1px solid #000;
+            padding: 10px 23px;
         }
 
         .signature p {
@@ -76,27 +91,50 @@
             margin-top: 40px;
             font-size: 18px;
         }
+        .aomai-img-certified {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+        }
+        .aomai-img-certified img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .aomai-border {
+            position: relative;
+            border: 4px solid #9898e6;
+            padding: 39px;
+        }
     </style>
 </head>
 <body>
     <div class="diploma-container">
-        <div class="header">Universidade de Programação</div>
-        <div class="sub-header">Certificado de Conclusão</div>
-        <div class="content">
-            <p>
-                Certificamos que <strong>{{ nome }}</strong>, {{ nacionalidade }}, natural do Estado de {{ estado }}, nascido em {{ data_nascimento }}, RG {{ documento }}, concluiu em {{ data_conclusao }} o curso de {{ curso }}, nível de especialização, com carga horária de {{ carga_horaria }} horas.
-            </p>
-            <p>
-                Este certificado é concedido em conformidade com o artigo 44, inciso 3353, da Lei 9394/96, e com a Resolução 
-                C.N.C./C.C.S. nº 01/07.
-            </p>
-        </div>
-        <div class="date">São Paulo, {{ data_emissao }}</div>
-        <div class="signatures">
-            <div class="signature">
-                <p><strong>{{ nome_assinatura }}</strong></p>
-                <p>{{ cargo }}</p>
-            </div>            
+        <div class="aomai-border">
+            <div class="header">Universidade de baixadores de PNG falso</div>
+            <div class="sub-header">Certificado de Conclusão</div>
+            <div class="content">
+                <p>
+                    Certificamos que <strong>{{ nome }}</strong>, {{ nacionalidade }}, natural do Estado de {{ estado }}, nascido em {{ data_nascimento }}, RG {{ documento }}, concluiu em {{ data_conclusao }} o curso de {{ curso }}, nível de especialização, com carga horária de {{ carga_horaria }} horas.
+                </p>
+                <p>
+                    Este certificado é concedido em conformidade com o artigo 44, inciso 3353, da Lei 9394/96, e com a Resolução 
+                    C.N.C./C.C.S. nº 01/07.
+                </p>
+            </div>
+            <div class="date">São Paulo, {{ data_emissao }}</div>
+            <div class="signatures">
+                <div class="signature">
+                    <p><strong>{{ nome_assinatura }}</strong></p>
+                    <p>{{ cargo }}</p>
+                </div>            
+            </div>
+    
+            <div class="aomai-img-certified">
+                <img src="./assets/image 7.png" alt="">
+            </div>
         </div>
     </div>
 </body>
