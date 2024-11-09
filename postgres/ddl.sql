@@ -10,5 +10,6 @@ CREATE TABLE IF NOT EXISTS certificates (
     carga_horaria VARCHAR(255) NOT NULL,
     data_emissao VARCHAR(255) NOT NULL,
     nome_assinatura VARCHAR(255) NOT NULL,
-    cargo VARCHAR(255)
+    cargo VARCHAR(255),
+    certificate_path VARCHAR(255)
 );

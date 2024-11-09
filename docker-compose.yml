@@ -56,8 +56,17 @@ services:
       - postgres
       - redis
       - worker
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_NAME=certificates
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
     networks:
       - ms_network
+    ports:
+      - "3000:3000"
 
 volumes:
   pdf_storege:

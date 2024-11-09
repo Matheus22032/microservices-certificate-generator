@@ -5,58 +5,48 @@ const { Client } = require("pg");
 const app = express();
 app.use(express.json());
 
-const DB_CONFIG = {
+const client = new Client({
   user: "postgres",
   password: "postgres",
   host: "postgres",
   port: 5432,
   database: "certificates",
-};
+});
 
 const RABBITMQ_URL = "amqp://guest:guest@rabbitmq:5672";
 const QUEUE_NAME = "certificates";
-
-let pgClient;
 let rabbitChannel;
 
 const connectToPostgres = async () => {
-    let isConnected = false;
-  
-    while (!isConnected) {
-      try {
-        console.log("Tentando conectar ao PostgreSQL...");
-        await client.connect();
-        console.log("Conectado ao PostgreSQL!");
-        isConnected = true;
-      } catch (error) {
-        console.error("Erro ao conectar ao PostgreSQL:", error.message);
-        console.log("Tentando reconectar em 5 segundos...");
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-      }
-    }
-  };
-  
-
+  try {
+    console.log("Tentando conectar ao PostgreSQL...");
+    await client.connect();
+    console.log("Conectado ao PostgreSQL!");
+  } catch (error) {
+    console.error("Erro ao conectar ao PostgreSQL:", error.message);
+    process.exit(1); 
+  }
+};
 
 const connectToRabbitMQ = async () => {
-    while (!rabbitChannel) {
-      try {
-        console.log("Tentando conectar ao RabbitMQ...");
-        const connection = await amqp.connect(RABBITMQ_URL);
-        rabbitChannel = await connection.createChannel();
-        await rabbitChannel.assertQueue(QUEUE_NAME, { durable: true });
-        console.log("Conectado ao RabbitMQ e fila configurada");
-      } catch (error) {
-        console.error("Erro ao conectar ao RabbitMQ:", error);
-        console.log("Tentando reconectar em 5 segundos...");
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-      }
+  while (!rabbitChannel) {
+    try {
+      console.log("Tentando conectar ao RabbitMQ...");
+      const connection = await amqp.connect(RABBITMQ_URL);
+      rabbitChannel = await connection.createChannel();
+      await rabbitChannel.assertQueue(QUEUE_NAME, { durable: true });
+      console.log("Conectado ao RabbitMQ e fila configurada");
+    } catch (error) {
+      console.error("Erro ao conectar ao RabbitMQ:", error);
+      console.log("Tentando reconectar em 5 segundos...");
+      await new Promise((resolve) => setTimeout(resolve, 5000));
     }
-  };
+  }
+};
 
 const sendToQueue = async (message) => {
   if (!rabbitChannel) {
-    throw new Error("Error in RabbitMQ connection");
+    throw new Error("Erro na conexão com o RabbitMQ");
   }
   await rabbitChannel.sendToQueue(QUEUE_NAME, Buffer.from(JSON.stringify(message)), {
     persistent: true,
@@ -84,7 +74,7 @@ app.post("/certificates", async (req, res) => {
   `;
 
   try {
-    await pgClient.query(query, [
+    await client.query(query, [
       nome,
       nacionalidade,
       estado,
@@ -97,10 +87,13 @@ app.post("/certificates", async (req, res) => {
       nome_assinatura,
       cargo
     ]);
+
     await sendToQueue(req.body);
-    res.status(201).json({ message: "Certificate created successfully" });
+
+    res.status(201).json({ message: "Certificado criado com sucesso" });
   } catch (error) {
-    console.error("Error creating certificate:", error);
+    console.error("Erro ao criar o certificado:", error);
+    res.status(500).json({ error: "Erro ao criar o certificado" });
   }
 });
 
@@ -109,7 +102,7 @@ const startServer = async () => {
     await connectToPostgres();
     await connectToRabbitMQ();
     const PORT = 3000;
-    app.listen(PORT, () => console.log(`API running at | ${PORT}`));
+    app.listen(PORT, () => console.log(`API executando em | ${PORT}`));
   } catch (error) {
     console.error("Erro ao iniciar o servidor:", error);
     process.exit(1);
