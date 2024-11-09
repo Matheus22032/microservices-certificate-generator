@@ -14,19 +14,25 @@ const client = new Client({
 });
 
 const RABBITMQ_URL = "amqp://guest:guest@rabbitmq:5672";
-const QUEUE_NAME = "certificates";
+const QUEUE_NAME = "certificate";
 let rabbitChannel;
 
 const connectToPostgres = async () => {
-  try {
-    console.log("Tentando conectar ao PostgreSQL...");
-    await client.connect();
-    console.log("Conectado ao PostgreSQL!");
-  } catch (error) {
-    console.error("Erro ao conectar ao PostgreSQL:", error.message);
-    process.exit(1); 
+  let retries = 5;
+  await new Promise(res => setTimeout(res, 10000));
+  while (retries > 0) {
+    try {
+      await client.connect();
+      console.log('Conectado ao PostgreSQL!');
+      return client;
+    } catch (err) {
+      console.log(`Falha ao conectar. Tentativas restantes: ${retries}`);
+      retries--;
+      await new Promise(res => setTimeout(res, 5000));
+    }
   }
-};
+
+}
 
 const connectToRabbitMQ = async () => {
   while (!rabbitChannel) {
@@ -34,7 +40,7 @@ const connectToRabbitMQ = async () => {
       console.log("Tentando conectar ao RabbitMQ...");
       const connection = await amqp.connect(RABBITMQ_URL);
       rabbitChannel = await connection.createChannel();
-      await rabbitChannel.assertQueue(QUEUE_NAME, { durable: true });
+      await rabbitChannel.assertQueue(QUEUE_NAME, { durable: false });
       console.log("Conectado ao RabbitMQ e fila configurada");
     } catch (error) {
       console.error("Erro ao conectar ao RabbitMQ:", error);
