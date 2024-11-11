@@ -6,14 +6,11 @@ let successRate = new Rate('successful_requests');
 let responseTimes = new Trend('response_times');
 
 export let options = {
-  stages: [
-    { duration: '30s', target: 10 },  
-    { duration: '1m', target: 10 }, 
-    { duration: '30s', target: 0 },   
-  ],
+  vus: 60, 
+  duration: '1m',  
   thresholds: {
-    'successful_requests': ['rate>0.95'], 
-    'response_times': ['p(95)<500'],   
+    'successful_requests': ['rate>0.95'],  
+    'response_times': ['p(95)<200'],    
   },
 };
 
