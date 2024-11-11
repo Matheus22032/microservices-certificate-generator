@@ -39,11 +39,10 @@ services:
       - pdf_storege:/app/pdf_files
     environment:
       - DATABASE_HOST=postgres
-      - DATABASE_USER=myuser
-      - DATABASE_PASSWORD=mypassword
-      - DATABASE_NAME=mydatabase
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_NAME=certificates
       - RABBITMQ_HOST=rabbitmq
-      - REDIS_HOST=redis
     networks:
       - ms_network
 
