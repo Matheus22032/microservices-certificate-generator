@@ -92,7 +92,6 @@ app.post("/certificates", async (req, res) => {
   `;
 
   try {
-
     const result = await client.query(query, [
       nome,
       nacionalidade,
@@ -109,7 +108,12 @@ app.post("/certificates", async (req, res) => {
 
     const certificateId = result.rows[0].id;  
 
-    await sendToQueue(req.body);
+    const certificateWithId = {
+      ...req.body,
+      certificateId
+    };
+
+    await sendToQueue(certificateWithId);
 
     res.status(201).json({ message: "Certificado criado com sucesso", id: certificateId });
   } catch (error) {

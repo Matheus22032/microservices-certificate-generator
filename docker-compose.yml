@@ -2,8 +2,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"      
-      - "15672:15672"    
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - ms_network
 
@@ -14,16 +14,16 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=certificates
     ports:
-      - "5432:5432"      
+      - "5432:5432"
     networks:
       - ms_network
     volumes:
-    - ./postgres/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql  
+      - ./postgres/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql
 
   redis:
     image: redis
     ports:
-      - "6379:6379"      
+      - "6379:6379"
     networks:
       - ms_network
 
@@ -47,7 +47,7 @@ services:
       - ms_network
 
   api:
-    build: 
+    build:
       context: api
       dockerfile: Dockerfile
     depends_on:
@@ -66,6 +66,16 @@ services:
       - ms_network
     ports:
       - "3000:3000"
+
+  k6:
+    image: grafana/k6
+    volumes:
+      - ./api:/mnt/api 
+    command: run /mnt/api/test.js
+    depends_on:
+      - api
+    networks:
+      - ms_network
 
 volumes:
   pdf_storege:
