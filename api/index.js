@@ -1,6 +1,8 @@
 const express = require('express');
 const amqp = require('amqplib');
 const { Client } = require("pg");
+const redis = require('redis');
+
 
 const app = express();
 app.use(express.json());
@@ -12,6 +14,15 @@ const client = new Client({
   port: 5432,
   database: "certificates",
 });
+
+
+const redisClient = redis.createClient({
+  url: 'redis://redis:6379'
+});
+
+redisClient.on('error', (err) => console.error('Erro ao conectar ao Redis:', err));
+redisClient.connect().then(() => console.log('Conectado ao Redis'));
+
 
 const RABBITMQ_URL = "amqp://guest:guest@rabbitmq:5672";
 const QUEUE_NAME = "certificate";
@@ -77,10 +88,12 @@ app.post("/certificates", async (req, res) => {
   const query = `
     INSERT INTO certificates (nome, nacionalidade, estado, data_nascimento, documento, data_conclusao, curso, carga_horaria, data_emissao, nome_assinatura, cargo)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    RETURNING id
   `;
 
   try {
-    await client.query(query, [
+
+    const result = await client.query(query, [
       nome,
       nacionalidade,
       estado,
@@ -94,14 +107,59 @@ app.post("/certificates", async (req, res) => {
       cargo
     ]);
 
+    const certificateId = result.rows[0].id;  
+
     await sendToQueue(req.body);
 
-    res.status(201).json({ message: "Certificado criado com sucesso" });
+    res.status(201).json({ message: "Certificado criado com sucesso", id: certificateId });
   } catch (error) {
     console.error("Erro ao criar o certificado:", error);
     res.status(500).json({ error: "Erro ao criar o certificado" });
   }
 });
+
+
+
+app.get('/certificates', async (req, res) => {
+  try {
+    const result = await client.query('SELECT * FROM certificates');
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Erro ao buscar certificados:", error);
+    res.status(500).json({ error: "Erro ao buscar certificados" });
+  }
+});
+
+
+app.get("/certificates/:id", async (req, res) => {
+  const certificateId = req.params.id; 
+
+  try {
+    let cachedCertificate = await redisClient.get(`certificate:${certificateId}`);
+
+    if (cachedCertificate) {
+      return res.json(JSON.parse(cachedCertificate));
+    }
+
+    const result = await client.query("SELECT * FROM certificates WHERE id = $1", [certificateId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Certificado não encontrado" });
+    }
+
+    const certificate = result.rows[0];
+
+    await redisClient.set(`certificate:${certificateId}`, JSON.stringify(certificate), { EX: 3600 });
+
+    res.json(certificate);
+  } catch (error) {
+    console.error("Erro ao obter certificado:", error);
+    res.status(500).json({ error: "Erro ao obter certificado" });
+  }
+});
+
+
 
 const startServer = async () => {
   try {
