@@ -4,9 +4,43 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import pika
 import json
+import psycopg2
+from psycopg2 import sql
 
+host = os.getenv('DATABASE_HOST')
+user = os.getenv('DATABASE_USER')
+password = os.getenv('DATABASE_PASSWORD')
+dbname = os.getenv('DATABASE_NAME')
 env = Environment(loader=FileSystemLoader('.'))
 template = env.get_template('template.html')
+try:
+    time.sleep(10)
+    conn = psycopg2.connect(
+        host=host,
+        port=5432,
+        user=user,
+        password=password,
+        dbname=dbname
+    )
+    print("Conexão estabelecida com sucesso!")
+
+except Exception as e:
+    print("Erro ao conectar ao PostgreSQL:", e)
+
+def update_column( certificate_path, certificate_id):
+    cursor = conn.cursor()
+
+    sql = f"UPDATE certificates SET certificate_path = %s WHERE id = %s"
+    
+    try:
+        cursor.execute(sql, (certificate_path, certificate_id))
+        conn.commit()
+        print(f"Registro com ID {certificate_id} atualizado com sucesso.")
+    except Exception as e:
+        print(f"Erro ao atualizar o registro: {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
 
 def name_pdf_formater(name):
     words = name.split()
@@ -28,6 +62,7 @@ def consume_message(ch, method, properties, body):
         pdf_path = os.path.join(pdf_dir, pdf_name)
 
         pdfkit.from_string(html_content, pdf_path)
+        update_column(pdf_path, data['certificateId'])
         print(f"Certificado para {data['nome']} gerado com sucesso!")
         
     except Exception as e:
