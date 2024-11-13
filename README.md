@@ -2,6 +2,8 @@
 ### Gustavo Henrique Omai da Silva RM96059
 ### Matheus Gonçalves Sant'Ana RM96166
 
+### Olá Professor, o nosso código está com o K6 implementado caso queira ver é só abrir o container dele no Docker Abraços 
+
 # Como Rodar?
 
 ### Abra o terminal e digite o comando
