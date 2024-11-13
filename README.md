@@ -31,8 +31,13 @@
 #### Retorna o Path do certificado
 
 ```http
-  GET /localhost:3000/certificate/{id}
+  GET /localhost:3000/certificate/:id
+
 ```
+
+
+
+
 
 #### Criar Certificado
 
@@ -52,3 +57,33 @@
 | `carga_horaria`      | `string` |  Carga horária
 | `data_emissao`      | `string` |  Data de emissão
 | `cargo`      | `string` |  Cargo
+
+
+
+### Requisições CURL
+
+#### POST
+
+```curl
+  curl --location 'http://localhost:3000/certificates' \
+--header 'Content-Type: text/plain' \
+--data '{ 
+  "nome": "Nome",
+    "nacionalidade": "Brasileira",
+    "estado": "SP",
+    "data_nascimento": "1990-01-01",
+    "documento": "123456789",
+    "data_conclusao": "2024-06-01",
+    "curso": "Curso de Teste",
+    "carga_horaria": "40h",
+    "data_emissao": "2024-07-01",
+    "nome_assinatura": "Assinatura Teste",
+    "cargo": "Coordenador"
+}'
+```
+
+#### GET
+
+```curl
+  curl --location 'http://localhost:3000/certificates/:id'
+```
