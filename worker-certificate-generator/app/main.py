@@ -13,6 +13,10 @@ password = os.getenv('DATABASE_PASSWORD')
 dbname = os.getenv('DATABASE_NAME')
 env = Environment(loader=FileSystemLoader('.'))
 template = env.get_template('template.html')
+options = {
+    'orientation': 'landscape',
+    'page-size': 'A4'
+}
 try:
     time.sleep(10)
     conn = psycopg2.connect(
@@ -62,7 +66,7 @@ def consume_message(ch, method, properties, body):
         pdf_path = os.path.join(pdf_dir, pdf_name)
 
         pdfkit.from_string(html_content, pdf_path)
-        update_column(pdf_path, data['certificateId'])
+        update_column(pdf_path, data['certificateId'], options=options)
         print(f"Certificado para {data['nome']} gerado com sucesso!")
         
     except Exception as e:
